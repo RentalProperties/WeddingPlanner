@@ -4,82 +4,8 @@
   },
   "days": [
     {
-      "id": "day1",
-      "name": "Prewedding Party",
-      "date": "",
-      "events": []
-    },
-    {
-      "id": "day2",
-      "name": "Preparation Day",
-      "date": "",
-      "events": [
-        {
-          "id": "1",
-          "title": "Bridal Preparation",
-          "startTime": "07:00",
-          "duration": 120,
-          "color": "#B5737F",
-          "description": "Hair, makeup, and getting dressed",
-          "category": "Preparation"
-        }
-      ]
-    },
-    {
       "id": "day3",
       "name": "Wedding Day",
-      "date": "",
-      "events": [
-        {
-          "id": "2",
-          "title": "Ceremony",
-          "startTime": "14:00",
-          "duration": 60,
-          "color": "#C4A055",
-          "description": "Exchange of vows",
-          "category": "Ceremony"
-        },
-        {
-          "id": "3",
-          "title": "Cocktail Hour",
-          "startTime": "15:00",
-          "duration": 60,
-          "color": "#8A9E80",
-          "description": "Drinks and canapés",
-          "category": "Reception"
-        },
-        {
-          "id": "4",
-          "title": "Reception Dinner",
-          "startTime": "16:00",
-          "duration": 180,
-          "color": "#7B9CBF",
-          "description": "Sit-down dinner with speeches",
-          "category": "Reception"
-        },
-        {
-          "id": "5",
-          "title": "First Dance",
-          "startTime": "19:00",
-          "duration": 30,
-          "color": "#A07BC4",
-          "description": "First dance as a married couple",
-          "category": "Dancing"
-        },
-        {
-          "id": "6",
-          "title": "Party",
-          "startTime": "19:30",
-          "duration": 210,
-          "color": "#BF7B7B",
-          "description": "Dancing and celebrations",
-          "category": "Dancing"
-        }
-      ]
-    },
-    {
-      "id": "day4",
-      "name": "After Wedding",
       "date": "",
       "events": []
     }

@@ -1,11 +1,47 @@
 [
-  { "id": "overview", "label": "Overview", "icon": "🌸" },
-  { "id": "budget", "label": "Budget", "icon": "💰" },
-  { "id": "venues", "label": "Venues", "icon": "🏛" },
-  { "id": "photographers", "label": "Photographers", "icon": "📷" },
-  { "id": "guests", "label": "Guests", "icon": "👥" },
-  { "id": "tables", "label": "Seating", "icon": "🪑" },
-  { "id": "checklist", "label": "Checklist", "icon": "✅" },
-  { "id": "vendors", "label": "Vendors", "icon": "🎀" },
-  { "id": "timeline", "label": "Timeline", "icon": "🕐" }
+  {
+    "id": "overview",
+    "label": "Overview",
+    "icon": "🌸"
+  },
+  {
+    "id": "budget",
+    "label": "Budget",
+    "icon": "💰"
+  },
+  {
+    "id": "venues",
+    "label": "Venues",
+    "icon": "🏛"
+  },
+  {
+    "id": "photographers",
+    "label": "Photographers",
+    "icon": "📷"
+  },
+  {
+    "id": "guests",
+    "label": "Guests",
+    "icon": "👥"
+  },
+  {
+    "id": "tables",
+    "label": "Seating",
+    "icon": "🪑"
+  },
+  {
+    "id": "checklist",
+    "label": "Checklist",
+    "icon": "✅"
+  },
+  {
+    "id": "vendors",
+    "label": "Vendors",
+    "icon": "🎀"
+  },
+  {
+    "id": "timeline",
+    "label": "Timeline",
+    "icon": "🕐"
+  }
 ]
