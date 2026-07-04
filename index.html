@@ -6088,15 +6088,7 @@
             const next =
               typeof updater === "function" ? updater(prev) : updater;
             _checklistRef.current = next;
-            try {
-              if (window.DataStore && window.DataStore.saveCollection)
-                window.DataStore.saveCollection("checklist", {
-                  tasks: next,
-                  categories: _checklistCatsRef.current,
-                }).catch((e) => console.warn("saveChecklist tasks failed", e));
-            } catch (e) {
-              console.warn("saveChecklist tasks failed", e);
-            }
+            setIsSaved(false);
             return next;
           });
         };
@@ -6104,32 +6096,16 @@
         const setChecklistCategoriesPersist = (newCats) => {
           _checklistCatsRef.current = newCats;
           setChecklistCategories(newCats);
-          try {
-            if (window.DataStore && window.DataStore.saveCollection)
-              window.DataStore.saveCollection("checklist", {
-                tasks: _checklistRef.current,
-                categories: newCats,
-              }).catch((e) =>
-                console.warn("saveChecklist categories failed", e),
-              );
-          } catch (e) {
-            console.warn("saveChecklist categories failed", e);
-          }
+          setIsSaved(false);
         };
         const setVendorsPersist = createPersistSetter("vendors", setVendors);
         const setTimelinePersist = createPersistSetter("timeline", setTimeline);
 
-        const saveMeta = async (newMeta) => {
+        const saveMeta = (newMeta) => {
           setMeta(newMeta);
-          try {
-            await fetch("http://localhost:3001/api/meta", {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(newMeta),
-            });
-          } catch (e) {
-            console.warn("saveMeta failed", e);
-          }
+          // Mark unsaved so the Save button enables; handleSaveAll pushes
+          // meta to GitHub as part of the atomic commit.
+          setIsSaved(false);
         };
 
         const setLang = (newLang) => {
