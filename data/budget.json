@@ -5,7 +5,7 @@
       "id": 1,
       "name": "Venue",
       "budget": 8500,
-      "spent": 0,
+      "spent": 6,
       "color": "#B5737F",
       "expenses": []
     },
