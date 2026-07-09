@@ -5981,6 +5981,22 @@
         { id: "timeline", icon: "🕐" },
       ];
 
+      // Last-known data cached by githubDataStore at the previous save/load.
+      // Hydrates the first render so the UI doesn't flash the built-in
+      // defaults while GitHub is being queried; loadAll() reconciles after.
+      const INITIAL_DATA =
+        (window.GitHubDataStore &&
+          window.GitHubDataStore.getSnapshotData &&
+          window.GitHubDataStore.getSnapshotData()) ||
+        {};
+      const INITIAL_CHECKLIST = (() => {
+        const raw = INITIAL_DATA.checklist;
+        if (Array.isArray(raw)) return { tasks: raw, categories: [] };
+        if (raw && raw.tasks)
+          return { tasks: raw.tasks, categories: raw.categories || [] };
+        return { tasks: [], categories: [] };
+      })();
+
       function WeddingPlanner() {
         const isMobile = useIsMobile();
         const [activeTab, setActiveTab] = useState(() => {
@@ -5998,17 +6014,25 @@
             localStorage.setItem("wp_active_tab", activeTab);
           } catch (_) {}
         }, [activeTab]);
-        const [venues, setVenues] = useState([]);
-        const [photographers, setPhotographers] = useState([]);
-        const [budget, setBudget] = useState({ total: 0, categories: [] });
-        const [guests, setGuests] = useState([]);
-        const [tables, setTables] = useState([]);
-        const [checklist, setChecklist] = useState([]);
-        const [checklistCategories, setChecklistCategories] = useState([]);
-        const _checklistRef = React.useRef([]);
-        const _checklistCatsRef = React.useRef([]);
-        const [vendors, setVendors] = useState([]);
-        const [timeline, setTimeline] = useState(DEFAULT_TIMELINE);
+        const [venues, setVenues] = useState(INITIAL_DATA.venues || []);
+        const [photographers, setPhotographers] = useState(
+          INITIAL_DATA.photographers || [],
+        );
+        const [budget, setBudget] = useState(
+          INITIAL_DATA.budget || { total: 0, categories: [] },
+        );
+        const [guests, setGuests] = useState(INITIAL_DATA.guests || []);
+        const [tables, setTables] = useState(INITIAL_DATA.tables || []);
+        const [checklist, setChecklist] = useState(INITIAL_CHECKLIST.tasks);
+        const [checklistCategories, setChecklistCategories] = useState(
+          INITIAL_CHECKLIST.categories,
+        );
+        const _checklistRef = React.useRef(INITIAL_CHECKLIST.tasks);
+        const _checklistCatsRef = React.useRef(INITIAL_CHECKLIST.categories);
+        const [vendors, setVendors] = useState(INITIAL_DATA.vendors || []);
+        const [timeline, setTimeline] = useState(
+          INITIAL_DATA.timeline || DEFAULT_TIMELINE,
+        );
         const [navItems] = useState(NAV_ITEMS);
         const [lang, setLangState] = useState(
           () =>
@@ -6016,12 +6040,14 @@
               localStorage.getItem("wp_lang")) ||
             "en",
         );
-        const [meta, setMeta] = useState({
-          wedding_date: "2025-09-20",
-          partner1_name: "Emma",
-          partner2_name: "James",
-          title_type: "Reception Planner",
-        });
+        const [meta, setMeta] = useState(
+          INITIAL_DATA.meta || {
+            wedding_date: "2025-09-20",
+            partner1_name: "Emma",
+            partner2_name: "James",
+            title_type: "Reception Planner",
+          },
+        );
         const [showMetaEdit, setShowMetaEdit] = useState(false);
         const [metaInput, setMetaInput] = useState(null);
         const [showSetupModal, setShowSetupModal] = useState(false);

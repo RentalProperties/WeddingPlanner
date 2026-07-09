@@ -470,6 +470,13 @@
     return isDirty;
   }
 
+  // Synchronous access to the last-known data, for hydrating the UI on the
+  // first render (before any network request completes).
+  function getSnapshotData() {
+    const snap = readSnapshot();
+    return snap && snap.data ? snap.data : null;
+  }
+
   window.GitHubDataStore = {
     getConfig,
     setConfig,
@@ -484,5 +491,6 @@
     saveCollection,
     getMetaDate,
     isDirtyFlag,
+    getSnapshotData,
   };
 })(window);
