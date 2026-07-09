@@ -5983,7 +5983,21 @@
 
       function WeddingPlanner() {
         const isMobile = useIsMobile();
-        const [activeTab, setActiveTab] = useState("overview");
+        const [activeTab, setActiveTab] = useState(() => {
+          try {
+            const saved = localStorage.getItem("wp_active_tab");
+            if (saved && NAV_ITEMS.some((item) => item.id === saved)) {
+              return saved;
+            }
+          } catch (_) {}
+          return "overview";
+        });
+
+        useEffect(() => {
+          try {
+            localStorage.setItem("wp_active_tab", activeTab);
+          } catch (_) {}
+        }, [activeTab]);
         const [venues, setVenues] = useState([]);
         const [photographers, setPhotographers] = useState([]);
         const [budget, setBudget] = useState({ total: 0, categories: [] });

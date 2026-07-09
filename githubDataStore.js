@@ -16,6 +16,30 @@
   let config = { owner: "", repo: "", token: "" };
   let isDirty = false;
   const fileShas = {};
+  const SNAPSHOT_KEY = "wp-data-snapshot";
+
+  // Local snapshot of the last state we saved to / loaded from GitHub, keyed
+  // by commit SHA. Lets a reload right after a save show the fresh data
+  // immediately instead of waiting out GitHub's API/Pages caches.
+  function readSnapshot() {
+    try {
+      const raw = localStorage.getItem(SNAPSHOT_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writeSnapshot(sha) {
+    try {
+      localStorage.setItem(
+        SNAPSHOT_KEY,
+        JSON.stringify({ sha, savedAt: Date.now(), data: store })
+      );
+    } catch (e) {
+      // localStorage full or unavailable — snapshot is only an optimization
+    }
+  }
 
   function getConfig() {
     const saved = localStorage.getItem("github-config");
@@ -33,11 +57,13 @@
   function setConfig(owner, repo, token) {
     config = { owner, repo, token };
     localStorage.setItem("github-config", JSON.stringify(config));
+    localStorage.removeItem(SNAPSHOT_KEY);
   }
 
   function clearConfig() {
     config = { owner: "", repo: "", token: "" };
     localStorage.removeItem("github-config");
+    localStorage.removeItem(SNAPSHOT_KEY);
   }
 
   async function fetchJson(path) {
@@ -53,6 +79,9 @@
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
         const res = await fetch(url, {
+          // GitHub API responses are cacheable for 60s; without no-store the
+          // browser serves pre-save content on a reload right after saving.
+          cache: "no-store",
           headers: {
             Authorization: `Bearer ${config.token}`,
             "Content-Type": "application/json",
@@ -80,10 +109,11 @@
     }
   }
 
-  async function getFileContent(filePath) {
+  async function getFileContent(filePath, ref) {
     try {
+      const refQuery = ref ? `?ref=${ref}` : "";
       const data = await githubApiFetch(
-        `/repos/${config.owner}/${config.repo}/contents/${filePath}`
+        `/repos/${config.owner}/${config.repo}/contents/${filePath}${refQuery}`
       );
       const binaryString = atob(data.content);
       const bytes = new Uint8Array(binaryString.length);
@@ -134,6 +164,9 @@
       if (result && result.content) {
         fileShas[filePath] = result.content.sha;
       }
+      if (result && result.commit) {
+        writeSnapshot(result.commit.sha);
+      }
       isDirty = false;
       window.dispatchEvent(new CustomEvent("data-saved"));
     } catch (e) {
@@ -142,12 +175,12 @@
     }
   }
 
-  async function loadCollection(key) {
+  async function loadCollection(key, ref) {
     if (!COLLECTIONS[key]) return null;
     try {
       const cfg = getConfig();
       if (cfg && cfg.token) {
-        const file = await getFileContent(COLLECTIONS[key]);
+        const file = await getFileContent(COLLECTIONS[key], ref);
         if (file) {
           store[key] = file.content;
           return file.content;
@@ -168,11 +201,47 @@
     }
   }
 
+  async function getHeadSha() {
+    const cfg = getConfig();
+    if (!cfg || !cfg.token) return null;
+    try {
+      const refData = await githubApiFetch(
+        `/repos/${cfg.owner}/${cfg.repo}/git/refs/heads/main`
+      );
+      return refData.object.sha;
+    } catch (e) {
+      console.warn("Failed to fetch head commit:", e.message);
+      return null;
+    }
+  }
+
   async function loadAll() {
     const keys = Object.keys(COLLECTIONS);
+
+    // Fast path: if the repo head is still the commit we last saved/loaded,
+    // the local snapshot IS the current data — use it directly. This avoids
+    // ten contents-API reads and any cache staleness right after a save.
+    const headSha = await getHeadSha();
+    const snapshot = readSnapshot();
+    if (headSha && snapshot && snapshot.sha === headSha && snapshot.data) {
+      Object.assign(store, snapshot.data);
+      const results = {};
+      for (const k of keys) {
+        results[k] = store[k] !== undefined ? store[k] : null;
+      }
+      return results;
+    }
+
+    // Otherwise load pinned to the head commit: content addressed by SHA is
+    // immutable, so a cached response can never be stale.
     const results = {};
+    const loaded = [];
     for (const k of keys) {
-      results[k] = await loadCollection(k);
+      results[k] = await loadCollection(k, headSha || undefined);
+      if (results[k] !== null && results[k] !== undefined) loaded.push(k);
+    }
+    if (headSha && loaded.length === keys.length) {
+      writeSnapshot(headSha);
     }
     return results;
   }
@@ -287,6 +356,7 @@
         }
       );
 
+      writeSnapshot(newCommitData.sha);
       isDirty = false;
       window.dispatchEvent(new CustomEvent("data-saved"));
     } catch (e) {
